@@ -1,0 +1,15 @@
+# The dataset is downloaded locally but is not submitted.
+data/
+
+# Generated training files
+cache/
+checkpoints/
+*.pt
+*.pth
+
+# Python and notebook temporary files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
