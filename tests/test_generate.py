@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from generate import generate
+from generate import _sample_next_token, generate
 from model import GPT, GPTConfig
 
 
@@ -28,6 +28,24 @@ class GenerationTests(unittest.TestCase):
         first = generate(self.model, [1, 2], 5, top_k=5, seed=123)
         second = generate(self.model, [1, 2], 5, top_k=5, seed=123)
         self.assertEqual(first, second)
+
+    def test_top_k_keeps_exactly_k_tokens_when_logits_tie(self) -> None:
+        logits = torch.zeros((1, 4))
+        allowed = set(torch.topk(logits, 2).indices[0].tolist())
+
+        for seed in range(20):
+            generator = torch.Generator().manual_seed(seed)
+            token = _sample_next_token(logits, 1.0, 2, None, generator).item()
+            self.assertIn(token, allowed)
+
+    def test_top_p_keeps_the_threshold_crossing_token(self) -> None:
+        probabilities = torch.tensor([[0.4, 0.3, 0.2, 0.1]])
+        logits = probabilities.log()
+
+        for seed in range(20):
+            generator = torch.Generator().manual_seed(seed)
+            token = _sample_next_token(logits, 1.0, None, 0.6, generator).item()
+            self.assertIn(token, {0, 1})
 
 
 if __name__ == "__main__":

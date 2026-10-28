@@ -1,4 +1,3 @@
-import tempfile
 import unittest
 from pathlib import Path
 
@@ -27,10 +26,12 @@ class BPETokenizerTests(unittest.TestCase):
         tokenizer = BPETokenizer()
         tokenizer.train(text, vocab_size=264)
 
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "tokenizer.json"
+        path = Path(__file__).parent / "_temporary_tokenizer.json"
+        try:
             tokenizer.save(str(path))
             loaded = BPETokenizer.load(str(path))
+        finally:
+            path.unlink(missing_ok=True)
 
         self.assertEqual(loaded.merges, tokenizer.merges)
         self.assertEqual(loaded.encode(text), tokenizer.encode(text))

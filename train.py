@@ -56,9 +56,12 @@ def prepare_data(project_root: Path):
     train_text = text[:split]
     val_text = text[split:]
 
-    tokenizer = BPETokenizer()
-    tokenizer.train(train_text, vocab_size=1024)
-    tokenizer.save(str(tokenizer_path))
+    if tokenizer_path.exists():
+        tokenizer = BPETokenizer.load(str(tokenizer_path))
+    else:
+        tokenizer = BPETokenizer()
+        tokenizer.train(train_text, vocab_size=1024)
+        tokenizer.save(str(tokenizer_path))
 
     train_ids = torch.tensor(tokenizer.encode(train_text), dtype=torch.long)
     val_ids = torch.tensor(tokenizer.encode(val_text), dtype=torch.long)

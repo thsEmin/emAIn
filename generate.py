@@ -18,8 +18,9 @@ def _sample_next_token(logits, temperature, top_k, top_p, generator):
         if top_k < 1:
             raise ValueError("top_k must be at least 1")
         top_k = min(top_k, logits.size(-1))
-        cutoff = torch.topk(logits, top_k).values[:, -1].unsqueeze(1)
-        logits = logits.masked_fill(logits < cutoff, float("-inf"))
+        top_values, top_indices = torch.topk(logits, top_k)
+        filtered = torch.full_like(logits, float("-inf"))
+        logits = filtered.scatter(1, top_indices, top_values)
 
     if top_p is not None:
         if not 0 < top_p <= 1:
