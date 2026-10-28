@@ -112,7 +112,11 @@ class GPT(nn.Module):
             else None
         )
         self.dropout = nn.Dropout(config.dropout)
-        self.blocks = nn.ModuleList([Block(config) for _ in range(config.n_layer)])
+        self.blocks = []
+        for layer_number in range(config.n_layer):
+            block = Block(config)
+            self.add_module(f"block_{layer_number}", block)
+            self.blocks.append(block)
         self.final_norm = nn.LayerNorm(config.n_embd)
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
         self.lm_head.weight = self.token_embedding.weight
